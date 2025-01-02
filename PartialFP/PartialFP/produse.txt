@@ -1,0 +1,10 @@
+3
+Lapte de soia
+30
+15
+Paine
+100
+6
+Ciocolata
+21
+5

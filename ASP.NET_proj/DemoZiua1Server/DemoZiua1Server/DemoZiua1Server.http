@@ -1,0 +1,6 @@
+@DemoZiua1Server_HostAddress = http://localhost:5238
+
+GET {{DemoZiua1Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

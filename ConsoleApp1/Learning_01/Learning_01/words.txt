@@ -1,0 +1,10 @@
+2
+alergare 3
+104 Marius
+203 Ionut
+207 Marian
+inot 4
+101 Popescu
+104 Marius
+203 Ionut
+523 Ionescu
