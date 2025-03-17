@@ -1,6 +1,0 @@
-5 0
-Paragraf1
-2 5
-Paragraf2
-3 0
-Paragraf3

@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/qt/qml/lab_01_ag">
-        <file>main.qml</file>
-    </qresource>
-</RCC>

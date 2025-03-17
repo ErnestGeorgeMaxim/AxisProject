@@ -1,5 +1,0 @@
-4
-mamut 50 250
-adidas 45 400
-nike 20 340
-vans 40 500
