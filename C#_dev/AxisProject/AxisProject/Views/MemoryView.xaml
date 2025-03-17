@@ -1,0 +1,70 @@
+﻿<Window x:Class="AxisProject.Views.MemoryView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AxisProject.Views"
+        mc:Ignorable="d"
+        Title="MemoryView" Height="450" Width="300"
+        AllowsTransparency="True"
+        WindowStyle="None"
+        Background="Black">
+    <Window.Resources>
+        <Style x:Key="CustomButtonStyle" TargetType="Button">
+            <!-- Base style -->
+            <Setter Property="Background" Value="#454545"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="5,2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="230"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Mouse hover -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#FF9500"/>
+                            </Trigger>
+                            <!-- Button pressed -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#FFB562"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="15" BorderBrush="#333333" BorderThickness="0,0,0,1">
+            <Grid>
+                <TextBlock Text="Memory" FontSize="22" FontWeight="Bold" Foreground="#FF9500" VerticalAlignment="Center"/>
+                <Button x:Name="CloseButton" Content="✕" HorizontalAlignment="Right" Width="30" Height="30"
+                        Background="Transparent" Foreground="#FF9500" BorderThickness="0" FontSize="16"
+                        Click="CloseButton_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- Memory Items -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="MemoryItemsPanel" Margin="10">
+                <!-- Initially empty. Items will be added programmatically -->
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>
