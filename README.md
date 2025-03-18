@@ -1,4 +1,4 @@
-# AxisProject
+# AxisProject📱
 
 This is a feature-rich calculator built using C# and XAML in a WPF application.
 It includes both Standard Mode and Programmer Mode, offering a user-friendly and interactive UI for performing various calculations.
@@ -6,7 +6,7 @@ It includes both Standard Mode and Programmer Mode, offering a user-friendly and
 
 ## ✨ Features
 - ✅ Standard Mode – Perform basic arithmetic operations (addition, subtraction, multiplication, division, percentages, etc.).
-- ✅ Programmer Mode – Supports HEX, DEC, OCT, and BIN conversions, bitwise operations, and memory functions.
+- ✅ Programmer Mode – Supports HEX, DEC, OCT, and BIN conversions and memory functions.
 - ✅ Interactive UI – A clean and responsive design built with WPF and XAML for a smooth user experience.
 - ✅ Memory Functions – Store, recall, add, and subtract memory values.
 - ✅ Clipboard Integration – Copy, paste, and cut functionality for seamless calculations.
