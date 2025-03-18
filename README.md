@@ -17,3 +17,5 @@ It includes both Standard Mode and Programmer Mode, offering a user-friendly and
 - C# (.NET Framework / .NET Core)
 - WPF (Windows Presentation Foundation)
 - XAML for UI design
+
+![image](https://github.com/user-attachments/assets/4a6d78f5-72c8-49a1-817a-3001d4388d80)
