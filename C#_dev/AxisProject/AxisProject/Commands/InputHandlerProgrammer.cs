@@ -1,7 +1,5 @@
 ﻿using AxisProject.Models;
 using AxisProject.Views;
-using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -27,10 +25,8 @@ namespace AxisProject.Commands
             {
                 string content = button.Content.ToString();
 
-                // Check if the button should be enabled for the current number system
                 if (!_calculator.IsButtonEnabled(content))
                 {
-                    // Button is disabled for current number system
                     return;
                 }
 
@@ -102,9 +98,9 @@ namespace AxisProject.Commands
                     break;
                 case Key.C:
                     if (_calculator.CurrentNumberSystem == NumberSystem.HEX && _calculator.IsButtonEnabled("C"))
-                        HandleButtonContent("C"); // Append "C" as HEX digit
+                        HandleButtonContent("C");
                     else
-                        HandleButtonContent("Clear"); // Treat as clear input
+                        HandleButtonContent("Clear");
                     break;
                 case Key.D:
                     if (_calculator.IsButtonEnabled("D"))
@@ -152,7 +148,6 @@ namespace AxisProject.Commands
 
         private void HandleButtonContent(string content)
         {
-            // Check if it's the "C" button in HEX mode (special case)
             if (content == "C" && _calculator.CurrentNumberSystem == NumberSystem.HEX && _calculator.IsButtonEnabled("C"))
             {
                 _calculator.AppendNumber("C");
@@ -259,16 +254,13 @@ namespace AxisProject.Commands
                     break;
             }
 
-            // Update the display
             _displayTextBox.Text = _calculator.GetDisplayText();
         }
 
         public void UpdateButtonStates()
         {
-            // Get the current number system from the calculator
             NumberSystem currentSystem = _calculator.CurrentNumberSystem;
 
-            // Find buttons in the ButtonGrid
             foreach (var child in _programmerView.ButtonGrid.Children)
             {
                 if (child is Grid grid)
@@ -299,13 +291,10 @@ namespace AxisProject.Commands
             if (string.IsNullOrEmpty(content))
                 return;
 
-            // Always enable these buttons regardless of number system
             if (content == "+" || content == "−" || content == "×" || content == "÷" ||
                 content == "=" || content == "%" || content == "CE" || content == "Clear" ||
                 content == "⌫" || content == "±" || content == "." || content == "☰" ||
-                // Add number system buttons
                 content == "HEX" || content == "DEC" || content == "OCT" || content == "BIN" ||
-                // Add memory operation buttons
                 content == "MC" || content == "MR" || content == "M+" || content == "M-" ||
                 content == "MS" || content == "M˅" || content == "M∨")
             {
@@ -314,23 +303,19 @@ namespace AxisProject.Commands
                 return;
             }
 
-            // Enable/disable number buttons based on current number system
             switch (currentSystem)
             {
                 case NumberSystem.BIN:
-                    // Only enable 0 and 1 in binary mode
                     button.IsEnabled = content == "0" || content == "1";
                     break;
 
                 case NumberSystem.OCT:
-                    // Enable 0-7 in octal mode
                     button.IsEnabled = content == "0" || content == "1" || content == "2" ||
                                       content == "3" || content == "4" || content == "5" ||
                                       content == "6" || content == "7";
                     break;
 
                 case NumberSystem.DEC:
-                    // Enable 0-9 in decimal mode
                     button.IsEnabled = content == "0" || content == "1" || content == "2" ||
                                       content == "3" || content == "4" || content == "5" ||
                                       content == "6" || content == "7" || content == "8" ||
@@ -338,7 +323,6 @@ namespace AxisProject.Commands
                     break;
 
                 case NumberSystem.HEX:
-                    // Enable all in hex mode (0-9, A-F)
                     button.IsEnabled = content == "0" || content == "1" || content == "2" ||
                                       content == "3" || content == "4" || content == "5" ||
                                       content == "6" || content == "7" || content == "8" ||
@@ -347,8 +331,6 @@ namespace AxisProject.Commands
                                       content == "F";
                     break;
             }
-
-            // Apply visual feedback for disabled buttons
             button.Opacity = button.IsEnabled ? 1.0 : 0.5;
         }
 

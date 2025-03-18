@@ -1,7 +1,5 @@
 ﻿using AxisProject.Commands;
 using AxisProject.Models;
-using AxisProject.Views;
-using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -13,7 +11,6 @@ namespace AxisProject.Views
         private Window _sidebarWindow = null!;
         private bool _isSidebarOpen = false;
 
-        // Memory view fields
         private Window _memoryWindow = null!;
         private bool _isMemoryOpen = false;
 
@@ -23,15 +20,11 @@ namespace AxisProject.Views
         public MainWindowView()
         {
             InitializeComponent();
-
             this.Focusable = true;
             this.Focus();
 
             _calculator = new CalculatorModel();
-
-            // Pass 'this' so the input handler can call ToggleMemoryView and update the memory view.
             _inputHandler = new InputHandler(DisplayTextBox, _calculator, this);
-
             DisplayTextBox.Text = _calculator.GetDisplayText();
 
             InitializeSidebar();
@@ -57,6 +50,11 @@ namespace AxisProject.Views
 
             this.LocationChanged += MainWindow_LocationChanged;
             this.KeyDown += MainWindow_KeyDown;
+
+            if (SettingsManager.Instance.CalculatorMode == CalculatorMode.Programmer)
+            {
+                this.Dispatcher.BeginInvoke(new Action(() => SwitchToProgrammerMode()));
+            }
         }
 
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
@@ -110,7 +108,6 @@ namespace AxisProject.Views
             {
                 _sidebarWindow.Close();
             };
-
             this.ContentRendered += (s, e) =>
             {
                 _sidebarWindow.Owner = this;
@@ -166,7 +163,6 @@ namespace AxisProject.Views
             _isSidebarOpen = !_isSidebarOpen;
         }
 
-        // Toggle the memory view.
         public void ToggleMemoryView()
         {
             if (_isMemoryOpen)
@@ -177,13 +173,12 @@ namespace AxisProject.Views
             else
             {
                 PositionMemoryView();
-                UpdateMemoryViewDisplay(); // Update display when opening.
+                UpdateMemoryViewDisplay();
                 _memoryWindow.Show();
                 _isMemoryOpen = true;
             }
         }
 
-        // Called by InputHandler after a memory operation to update the memory view.
         public void UpdateMemoryViewDisplay()
         {
             if (_memoryWindow is MemoryView memView)
@@ -204,6 +199,11 @@ namespace AxisProject.Views
 
         public void SwitchToProgrammerMode()
         {
+            // Save calculator mode setting
+            SettingsManager.Instance.CalculatorMode = CalculatorMode.Programmer;
+
+            Console.WriteLine($"Saved calculator mode: {SettingsManager.Instance.CalculatorMode}");
+
             // Create and show the programmer view
             ProgrammerView programmerView = new ProgrammerView();
             programmerView.Show();
@@ -212,20 +212,56 @@ namespace AxisProject.Views
             this.Close();
         }
 
-        // Add this method to MainWindowView class
         public void ToggleThousandsSeparator()
         {
             if (_calculator != null)
             {
                 _calculator.ToggleDigitGrouping();
+                SettingsManager.Instance.IsDigitGroupingEnabled = _calculator.IsDigitGroupingEnabled;
                 DisplayTextBox.Text = _calculator.GetDisplayText();
             }
         }
 
-        // Add this method to MainWindowView class
         public CalculatorModel GetCalculator()
         {
             return _calculator;
+        }
+
+        private void CopyCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            _calculator.Copy();
+        }
+
+        private void CutCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            DisplayTextBox.Text = _calculator.Cut();
+        }
+
+        private void PasteCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            _calculator.Paste();
+            DisplayTextBox.Text = _calculator.GetDisplayText();
+        }
+
+        private void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            _calculator.Copy();
+        }
+
+        private void Cut_Click(object sender, RoutedEventArgs e)
+        {
+            DisplayTextBox.Text = _calculator.Cut();
+        }
+
+        private void Paste_Click(object sender, RoutedEventArgs e)
+        {
+            _calculator.Paste();
+            DisplayTextBox.Text = _calculator.GetDisplayText();
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            _inputHandler.KeyPressHandler(sender, e);
         }
     }
 }

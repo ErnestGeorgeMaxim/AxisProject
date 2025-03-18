@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AxisProject.Models;
+using AxisProject.Views;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using AxisProject.Models;
-using AxisProject.Views;
 
 namespace AxisProject.Commands
 {
@@ -48,7 +42,6 @@ namespace AxisProject.Commands
         {
             string input = e.Key switch
             {
-                // Number keys (top row)
                 Key.D0 => "0",
                 Key.D1 => "1",
                 Key.D2 => "2",
@@ -60,7 +53,6 @@ namespace AxisProject.Commands
                 Key.D8 => "8",
                 Key.D9 => "9",
 
-                // Numpad numbers
                 Key.NumPad0 => "0",
                 Key.NumPad1 => "1",
                 Key.NumPad2 => "2",
@@ -72,29 +64,27 @@ namespace AxisProject.Commands
                 Key.NumPad8 => "8",
                 Key.NumPad9 => "9",
 
-                // Operations (both standard and numpad)
                 Key.Add => "+",
-                Key.OemPlus => "+", // For + without shift
+                Key.OemPlus => "+",
                 Key.Subtract => "−",
-                Key.OemMinus => "−", // For - without shift
+                Key.OemMinus => "−",
                 Key.Multiply => "×",
                 Key.Divide => "÷",
-                Key.OemQuestion => "÷", // For / key
+                Key.OemQuestion => "÷",
 
                 // Special keys
                 Key.Decimal => ".",
-                Key.OemPeriod => ".", // For . key
+                Key.OemPeriod => ".",
                 Key.Enter => "=",
                 Key.Back => "⌫",
                 Key.Delete => "C",
-                Key.Escape => "C", // Escape also clears
+                Key.Escape => "C",
 
-                // Function key mappings
-                Key.F9 => "±", // F9 for toggle sign (+/-)
-                Key.R => "1/x", // R for reciprocal
-                Key.Q => "√x", // Q for square root
-                Key.S => "x²", // S for square
-                Key.P => "%", // P for percent
+                Key.F9 => "±",
+                Key.R => "1/x",
+                Key.Q => "√x",
+                Key.S => "x²",
+                Key.P => "%",
 
                 _ => ""
             };
@@ -102,7 +92,7 @@ namespace AxisProject.Commands
             if (!string.IsNullOrEmpty(input))
             {
                 ProcessInput(input);
-                e.Handled = true; // Mark event as handled to prevent default behavior
+                e.Handled = true;
             }
         }
 
@@ -180,7 +170,6 @@ namespace AxisProject.Commands
                     _calculator.MemoryStore();
                     _mainWindowView.UpdateMemoryViewDisplay();
                     break;
-                // Toggle the memory view when M˅ is pressed.
                 case "M˅":
                     _mainWindowView.ToggleMemoryView();
                     break;

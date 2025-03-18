@@ -1,4 +1,4 @@
-﻿using System;
+﻿using AxisProject.Models;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -6,18 +6,14 @@ namespace AxisProject.Views
 {
     public partial class SidebarView : Window
     {
-        // References to windows for state synchronization
         private MainWindowView? _mainWindow;
         private ProgrammerView? _programmerView;
-
-        // Button reference for thousands separator toggle
         private Button? _thousandsSeparatorButton;
 
         public SidebarView()
         {
             InitializeComponent();
 
-            // Add click handlers for the calculator mode buttons
             if (StandardMode != null)
                 StandardMode.Click += StandardMode_Click;
             if (ProgrammerMode != null)
@@ -25,73 +21,65 @@ namespace AxisProject.Views
             if (CloseButton != null)
                 CloseButton.Click += CloseButton_Click;
 
-            // Get reference to the thousands separator button and add click handler
             _thousandsSeparatorButton = FindName("ThousandsSeparator") as Button;
             if (_thousandsSeparatorButton != null)
                 _thousandsSeparatorButton.Click += ThousandsSeparator_Click;
         }
 
-        // Method to set the main window reference
         public void SetStandardWindow(MainWindowView mainWindow)
         {
             _mainWindow = mainWindow ?? throw new ArgumentNullException(nameof(mainWindow));
             _programmerView = null;
-
-            // Update UI to reflect current mode
             UpdateModeSelection(isProgrammerMode: false);
-
-            // Update thousands separator button state
             UpdateThousandsSeparatorState();
         }
-
-        // Method to set the programmer window reference
         public void SetProgrammerWindow(ProgrammerView programmerWindow)
         {
             _programmerView = programmerWindow ?? throw new ArgumentNullException(nameof(programmerWindow));
             _mainWindow = null;
-
-            // Update UI to reflect current mode
             UpdateModeSelection(isProgrammerMode: true);
 
-            // Update thousands separator button state
-            UpdateThousandsSeparatorState();
+            if (_thousandsSeparatorButton != null)
+            {
+                _thousandsSeparatorButton.Visibility = Visibility.Collapsed;
+            }
         }
 
-        // Update the thousands separator button to reflect the current state
         private void UpdateThousandsSeparatorState()
         {
             if (_thousandsSeparatorButton != null)
             {
-                bool isEnabled = false;
+                _thousandsSeparatorButton.Visibility = Visibility.Visible;
 
-                if (_mainWindow != null && _mainWindow.GetCalculator() != null)
-                {
-                    isEnabled = _mainWindow.GetCalculator().IsDigitGroupingEnabled;
-                }
+                bool isEnabled = SettingsManager.Instance.IsDigitGroupingEnabled;
 
-                // Update button style based on state
                 _thousandsSeparatorButton.Style = isEnabled ?
                     (Style)FindResource("SelectedModeButtonStyle") :
                     (Style)FindResource("CustomButtonStyle");
             }
         }
 
-        // Handle the thousands separator button click
         private void ThousandsSeparator_Click(object sender, RoutedEventArgs e)
         {
             if (_mainWindow != null)
             {
                 _mainWindow.ToggleThousandsSeparator();
-                UpdateThousandsSeparatorState();
+
+                // Get the current state to update UI
+                bool isEnabled = SettingsManager.Instance.IsDigitGroupingEnabled;
+                Console.WriteLine($"Digit grouping toggled: {isEnabled}"); // Debug line
+
+                // Update button style based on the current state
+                _thousandsSeparatorButton.Style = isEnabled ?
+                    (Style)FindResource("SelectedModeButtonStyle") :
+                    (Style)FindResource("CustomButtonStyle");
             }
         }
 
-        // Update UI to highlight the current calculator mode
         private void UpdateModeSelection(bool isProgrammerMode)
         {
             if (StandardMode != null && ProgrammerMode != null)
             {
-                // Apply styles based on selection
                 StandardMode.Style = isProgrammerMode ? (Style)FindResource("CustomButtonStyle") : (Style)FindResource("DisabledModeButtonStyle");
                 ProgrammerMode.Style = isProgrammerMode ? (Style)FindResource("DisabledModeButtonStyle") : (Style)FindResource("CustomButtonStyle");
             }
@@ -101,7 +89,6 @@ namespace AxisProject.Views
         {
             this.Hide();
 
-            // Update state in the appropriate window
             if (_mainWindow != null)
                 _mainWindow.SetSidebarState(false);
             else if (_programmerView != null)
@@ -110,13 +97,11 @@ namespace AxisProject.Views
 
         private void StandardMode_Click(object sender, RoutedEventArgs e)
         {
-            // Only switch modes if we're currently in programmer mode
             if (_programmerView != null)
             {
                 try
                 {
                     _programmerView.SwitchToStandardMode();
-                    // The sidebar will be closed automatically when the programmer window is closed
                 }
                 catch (Exception ex)
                 {
@@ -128,13 +113,11 @@ namespace AxisProject.Views
 
         private void ProgrammerMode_Click(object sender, RoutedEventArgs e)
         {
-            // Only switch modes if we're currently in standard mode
             if (_mainWindow != null)
             {
                 try
                 {
                     _mainWindow.SwitchToProgrammerMode();
-                    // The sidebar will be closed automatically when the main window is closed
                 }
                 catch (Exception ex)
                 {
@@ -144,7 +127,6 @@ namespace AxisProject.Views
             }
         }
 
-        // Add method to explicitly position the sidebar relative to parent window
         public void PositionRelativeToParent()
         {
             if (_mainWindow != null)

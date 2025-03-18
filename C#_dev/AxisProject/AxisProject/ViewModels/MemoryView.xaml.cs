@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 namespace AxisProject.Views
@@ -26,7 +25,6 @@ namespace AxisProject.Views
             _mainWindow = null;
         }
 
-        // Call this method to position the MemoryView on the left side of the window
         public void PositionRelativeToParent()
         {
             if (_mainWindow != null)
@@ -41,10 +39,6 @@ namespace AxisProject.Views
             }
         }
 
-        /// <summary>
-        /// Update the displayed memory items based on the provided memory string.
-        /// </summary>
-        /// <param name="memoryStackDisplay">A string with one memory value per line.</param>
         public void UpdateMemoryItems(string memoryStackDisplay)
         {
             MemoryItemsPanel.Children.Clear();
@@ -65,7 +59,6 @@ namespace AxisProject.Views
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             this.Hide();
-            // Notify the parent window that the memory view is now hidden
             if (_mainWindow != null)
             {
                 _mainWindow.SetMemoryViewState(false);

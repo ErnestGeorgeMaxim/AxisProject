@@ -67,7 +67,35 @@
 
     <Grid Name="ButtonGrid" Margin="-1,0,1,0">
         <Button x:Name="MenuButton" Content="☰" HorizontalAlignment="Left" Height="40" Margin="2,5,0,0" VerticalAlignment="Top" Width="43" Background="Black" Foreground="#FF9500"/>
-        <TextBox Margin="10,44,10,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Height="163" Background="Black" Foreground="White" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" BorderThickness="0" FontSize="50" Name="DisplayTextBox" IsReadOnly="True" AcceptsReturn="True"/>
+        <TextBox Margin="10,44,10,0" TextWrapping="Wrap" Text="" 
+         VerticalAlignment="Top" Height="163" Background="Black" 
+         Foreground="White" HorizontalContentAlignment="Right" 
+         VerticalContentAlignment="Center" BorderThickness="0" 
+         FontSize="50" Name="DisplayTextBox" IsReadOnly="True" 
+         AcceptsReturn="True">
+            <TextBox.ContextMenu>
+                <ContextMenu Background="#333333" BorderBrush="#555555">
+                    <MenuItem Header="Copy" Click="Copy_Click" 
+                      Foreground="#FF9500">
+                        <MenuItem.Icon>
+                            <TextBlock Text="📋" FontSize="14"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Cut" Click="Cut_Click" 
+                      Foreground="#FF9500">
+                        <MenuItem.Icon>
+                            <TextBlock Text="✂️" FontSize="14"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Paste" Click="Paste_Click" 
+                      Foreground="#FF9500">
+                        <MenuItem.Icon>
+                            <TextBlock Text="📌" FontSize="14"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </TextBox.ContextMenu>
+        </TextBox>
         <Button Content="HEX" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.728,-2.294" Width="70" Height="36" Margin="50,335,0,0" FontSize="25" Style="{StaticResource ClearOrangeButton}"/>
         <Button Content="DEC" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.728,-2.294" Width="70" Height="36" Margin="150,335,0,0" FontSize="25" Style="{StaticResource ClearOrangeButton}"/>
         <Button Content="OCT" HorizontalAlignment="Left" VerticalAlignment="Top" RenderTransformOrigin="-0.728,-2.294" Width="70" Height="36" Margin="250,335,0,0" FontSize="25" Style="{StaticResource ClearOrangeButton}"/>

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace AxisProject.Models
 {
@@ -18,25 +14,93 @@ namespace AxisProject.Models
         private string _currentOperator = "";
         private bool _isNewOperation = true;
         private bool _hasCalculated = false;
-
-        // Add property to track if digit grouping is enabled
         public bool IsDigitGroupingEnabled { get; set; } = false;
 
-        // Format number with or without digit grouping based on current settings
         private string FormatNumber(double number)
         {
             if (IsDigitGroupingEnabled)
             {
-                // Use current culture's number format for proper digit grouping
                 CultureInfo currentCulture = CultureInfo.CurrentCulture;
                 return number.ToString("N", currentCulture)
                     .TrimEnd('0').TrimEnd(currentCulture.NumberFormat.NumberDecimalSeparator[0]);
             }
             else
             {
-                // Original format without grouping
                 return number.ToString("F6").TrimEnd('0').TrimEnd('.');
             }
+        }
+
+        public string Cut()
+        {
+            string currentText = GetDisplayText();
+            string result = ClipboardManager.Instance.Cut(currentText);
+
+            Clear();
+
+            return result;
+        }
+
+        public void Copy()
+        {
+            string currentText = GetDisplayText();
+            ClipboardManager.Instance.Copy(currentText);
+        }
+
+        public void Paste()
+        {
+            string clipboardContent = ClipboardManager.Instance.Paste();
+
+            if (string.IsNullOrEmpty(clipboardContent))
+                return;
+
+            clipboardContent = clipboardContent.Trim();
+
+            if (_hasCalculated)
+            {
+                Clear();
+                _hasCalculated = false;
+            }
+
+            if (double.TryParse(clipboardContent, NumberStyles.Any, CultureInfo.InvariantCulture, out double result))
+            {
+                CurrentInput = result.ToString(CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                clipboardContent = CleanupNumericInput(clipboardContent);
+
+                if (double.TryParse(clipboardContent, NumberStyles.Any, CultureInfo.InvariantCulture, out result))
+                {
+                    CurrentInput = result.ToString(CultureInfo.InvariantCulture);
+                }
+            }
+        }
+
+        private string CleanupNumericInput(string input)
+        {
+            string cleaned = "";
+            bool hasDecimal = false;
+            bool hasNegative = false;
+
+            foreach (char c in input)
+            {
+                if (char.IsDigit(c))
+                {
+                    cleaned += c;
+                }
+                else if ((c == '.' || c == ',') && !hasDecimal)
+                {
+                    cleaned += CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+                    hasDecimal = true;
+                }
+                else if (c == '-' && cleaned.Length == 0 && !hasNegative)
+                {
+                    cleaned += c;
+                    hasNegative = true;
+                }
+            }
+
+            return cleaned;
         }
 
         public void AppendNumber(string number)
@@ -49,7 +113,6 @@ namespace AxisProject.Models
 
             if (number == ".")
             {
-                // Use current culture's decimal separator
                 string decimalSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
                 if (CurrentInput.Contains(decimalSeparator))
                     return;
@@ -78,7 +141,6 @@ namespace AxisProject.Models
                 _hasCalculated = false;
             }
 
-            // If it's not a new operation, perform the previous operation first
             if (!_isNewOperation && !string.IsNullOrEmpty(_currentOperator))
             {
                 double secondOperand = double.Parse(CurrentInput, CultureInfo.InvariantCulture);
@@ -98,7 +160,6 @@ namespace AxisProject.Models
                         break;
                 }
 
-                // Update the expression to show the running calculation
                 Expression = FormatNumber(_currentValue) + op;
                 CurrentInput = "0";
             }
@@ -277,14 +338,13 @@ namespace AxisProject.Models
             return FormatDisplayNumber(CurrentInput);
         }
 
-        // Format the display number with or without digit grouping
         private string FormatDisplayNumber(string number)
         {
             if (double.TryParse(number, CultureInfo.InvariantCulture, out double parsedNumber))
             {
                 return FormatNumber(parsedNumber);
             }
-            return number; // Return as is if not a valid number (e.g., "Error")
+            return number;
         }
 
         public string GetDisplayText()
@@ -301,7 +361,6 @@ namespace AxisProject.Models
             {
                 if (!_isNewOperation && CurrentInput != "0")
                 {
-                    // Calculate and display the running result
                     double firstOperand = _currentValue;
                     double secondOperand = double.Parse(CurrentInput, CultureInfo.InvariantCulture);
                     double runningResult = 0;
@@ -313,7 +372,7 @@ namespace AxisProject.Models
                         case "×": runningResult = firstOperand * secondOperand; break;
                         case "÷":
                             if (secondOperand == 0)
-                                return "Error";  // Prevent division by zero
+                                return "Error";
                             runningResult = firstOperand / secondOperand;
                             break;
                     }
@@ -323,13 +382,11 @@ namespace AxisProject.Models
                 }
                 else
                 {
-                    // Just show the expression if we're starting a new operation
                     return Expression + (_isNewOperation ? "" : FormatDisplayNumber(CurrentInput));
                 }
             }
         }
 
-        // Toggle digit grouping
         public void ToggleDigitGrouping()
         {
             IsDigitGroupingEnabled = !IsDigitGroupingEnabled;
@@ -337,15 +394,12 @@ namespace AxisProject.Models
 
         #region Memory Functions
 
-        // Memory Store (MS): Push the current display value onto the memory stack.
         public void MemoryStore()
         {
             double value = double.Parse(CurrentInput, CultureInfo.InvariantCulture);
             _memoryStack.Add(value);
         }
 
-        // Memory Add (M+): Add the current display value to the last stored memory value,
-        // or store it if the memory stack is empty.
         public void MemoryAdd()
         {
             double value = double.Parse(CurrentInput, CultureInfo.InvariantCulture);
@@ -355,8 +409,6 @@ namespace AxisProject.Models
                 _memoryStack.Add(value);
         }
 
-        // Memory Subtract (M-): Subtract the current display value from the last stored memory value,
-        // or store the negative value if the memory stack is empty.
         public void MemorySubtract()
         {
             double value = double.Parse(CurrentInput, CultureInfo.InvariantCulture);
@@ -366,7 +418,6 @@ namespace AxisProject.Models
                 _memoryStack.Add(-value);
         }
 
-        // Memory Recall (MR): Return the last stored memory value and update the display.
         public string MemoryRecall()
         {
             if (_memoryStack.Any())
@@ -377,13 +428,11 @@ namespace AxisProject.Models
             return "0";
         }
 
-        // Memory Clear (MC): Clear the memory stack.
         public void MemoryClear()
         {
             _memoryStack.Clear();
         }
 
-        // Memory Stack Display (M˅): Return a string showing all stored memory values.
         public string MemoryStackDisplay()
         {
             if (!_memoryStack.Any())

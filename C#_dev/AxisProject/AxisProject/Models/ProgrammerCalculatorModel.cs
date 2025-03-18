@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AxisProject.Models
 {
@@ -15,28 +13,122 @@ namespace AxisProject.Models
 
     public class ProgrammerCalculatorModel
     {
-        // Properties
         public string CurrentInput { get; private set; } = "0";
         public string Expression { get; private set; } = "";
         public NumberSystem CurrentNumberSystem { get; private set; } = NumberSystem.DEC;
-
-        // Private fields
         private List<long> _memoryStack = new List<long>();
         private long _currentValue = 0;
         private string _currentOperator = "";
         private bool _isNewOperation = true;
         private bool _hasCalculated = false;
-
-        // Dictionary to track which buttons should be enabled for each number system
         private Dictionary<NumberSystem, HashSet<string>> _enabledButtons;
 
         public ProgrammerCalculatorModel()
         {
             InitializeEnabledButtons();
-            // Set default number system to decimal
             CurrentNumberSystem = NumberSystem.DEC;
         }
 
+        public string Cut()
+        {
+            string currentText = GetDisplayText();
+            string result = ClipboardManager.Instance.Cut(currentText);
+            Clear();
+
+            return result;
+        }
+
+        public void Copy()
+        {
+            string currentText = GetDisplayText();
+            ClipboardManager.Instance.Copy(currentText);
+        }
+
+        public void Paste()
+        {
+            string clipboardContent = ClipboardManager.Instance.Paste();
+
+            if (string.IsNullOrEmpty(clipboardContent))
+                return;
+
+            string cleanedInput = CleanupInputForNumberSystem(clipboardContent);
+
+            if (!string.IsNullOrEmpty(cleanedInput))
+            {
+                if (_hasCalculated)
+                {
+                    Clear();
+                    _hasCalculated = false;
+                }
+
+                try
+                {
+                    long value = ConvertToDecimal(cleanedInput, CurrentNumberSystem);
+                    CurrentInput = ConvertFromDecimal(value, CurrentNumberSystem);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private string CleanupInputForNumberSystem(string input)
+        {
+            input = input.Trim().ToUpper();
+            string hexPattern = @"^-?[0-9A-F]+$";
+            string decPattern = @"^-?\d+$";
+            string octPattern = @"^-?[0-7]+$";
+            string binPattern = @"^-?[01]+$";
+
+            switch (CurrentNumberSystem)
+            {
+                case NumberSystem.HEX:
+                    if (Regex.IsMatch(input, hexPattern))
+                        return input;
+
+                    return ExtractValidCharacters(input, "0123456789ABCDEF");
+
+                case NumberSystem.DEC:
+                    if (Regex.IsMatch(input, decPattern))
+                        return input;
+
+                    return ExtractValidCharacters(input, "0123456789");
+
+                case NumberSystem.OCT:
+                    if (Regex.IsMatch(input, octPattern))
+                        return input;
+
+                    return ExtractValidCharacters(input, "01234567");
+
+                case NumberSystem.BIN:
+                    if (Regex.IsMatch(input, binPattern))
+                        return input;
+
+                    return ExtractValidCharacters(input, "01");
+
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private string ExtractValidCharacters(string input, string validChars)
+        {
+            string result = "";
+            bool negative = input.StartsWith("-");
+
+            foreach (char c in input)
+            {
+                if (validChars.Contains(c))
+                {
+                    result += c;
+                }
+            }
+
+            if (string.IsNullOrEmpty(result))
+                return string.Empty;
+
+            return negative ? "-" + result : result;
+        }
         private void InitializeEnabledButtons()
         {
             _enabledButtons = new Dictionary<NumberSystem, HashSet<string>>
@@ -74,7 +166,6 @@ namespace AxisProject.Models
             return false;
         }
 
-        // Conversion: Read the string in its current base and return a base‑10 (decimal) long
         private long ConvertToDecimal(string value, NumberSystem fromSystem)
         {
             if (string.IsNullOrEmpty(value))
@@ -97,12 +188,10 @@ namespace AxisProject.Models
             }
             catch (Exception)
             {
-                // On error, default to 0
                 return 0;
             }
         }
 
-        // Conversion: Convert a base‑10 (decimal) value into a string in the desired base
         private string ConvertFromDecimal(long value, NumberSystem toSystem)
         {
             try
@@ -127,7 +216,6 @@ namespace AxisProject.Models
             }
         }
 
-        // Append a digit or decimal point (if in DEC mode)
         public void AppendNumber(string number)
         {
             if (!IsButtonEnabled(number))
@@ -151,7 +239,6 @@ namespace AxisProject.Models
             _isNewOperation = false;
         }
 
-        // Set operator (mimicking CalculatorModel's approach)
         public void SetOperator(string op)
         {
             if (_hasCalculated)
@@ -178,7 +265,6 @@ namespace AxisProject.Models
             _isNewOperation = true;
         }
 
-        // Calculate the result in base‑10 then convert to the current base
         public string Calculate()
         {
             long secondOperand = ConvertToDecimal(CurrentInput, CurrentNumberSystem);
@@ -209,7 +295,6 @@ namespace AxisProject.Models
             return CurrentInput;
         }
 
-        // Percentage operation mimics CalculatorModel: perform percentage calculation in base‑10
         public string ApplyPercentage()
         {
             long value = ConvertToDecimal(CurrentInput, CurrentNumberSystem);
@@ -274,7 +359,6 @@ namespace AxisProject.Models
 
         public string Reciprocal()
         {
-            // For programmer mode, reciprocal is only defined in DEC
             if (CurrentNumberSystem != NumberSystem.DEC)
                 return CurrentInput;
             double value = double.Parse(CurrentInput);
@@ -336,15 +420,12 @@ namespace AxisProject.Models
 
         #region Memory Functions
 
-        // Memory Store (MS): Store the current value in the memory stack
         public void MemoryStore()
         {
-            // Convert the current input to decimal (base-10) for storage
             long value = ConvertToDecimal(CurrentInput, CurrentNumberSystem);
             _memoryStack.Add(value);
         }
 
-        // Memory Add (M+): Add the current value to the last value in memory stack
         public void MemoryAdd()
         {
             long value = ConvertToDecimal(CurrentInput, CurrentNumberSystem);
@@ -354,7 +435,6 @@ namespace AxisProject.Models
                 _memoryStack.Add(value);
         }
 
-        // Memory Subtract (M-): Subtract the current value from the last value in memory stack
         public void MemorySubtract()
         {
             long value = ConvertToDecimal(CurrentInput, CurrentNumberSystem);
@@ -364,25 +444,21 @@ namespace AxisProject.Models
                 _memoryStack.Add(-value);
         }
 
-        // Memory Recall (MR): Recall the last value from memory stack
         public string MemoryRecall()
         {
             if (_memoryStack.Any())
             {
-                // Convert from decimal (base-10) to the current number system for display
                 CurrentInput = ConvertFromDecimal(_memoryStack.Last(), CurrentNumberSystem);
                 return CurrentInput;
             }
             return "0";
         }
 
-        // Memory Clear (MC): Clear all values from memory stack
         public void MemoryClear()
         {
             _memoryStack.Clear();
         }
 
-        // Memory Stack Display (M˅): Show all values in the memory stack
         public string MemoryStackDisplay()
         {
             if (!_memoryStack.Any())
@@ -391,14 +467,12 @@ namespace AxisProject.Models
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < _memoryStack.Count; i++)
             {
-                // Display memory values in the current number system
                 string formattedValue = ConvertFromDecimal(_memoryStack[i], CurrentNumberSystem);
                 sb.AppendLine($"{i + 1}: {formattedValue}");
             }
             return sb.ToString();
         }
 
-        // Convert a specific memory entry to current number system format
         public string GetMemoryValueInCurrentSystem(int index)
         {
             if (index >= 0 && index < _memoryStack.Count)
@@ -408,15 +482,12 @@ namespace AxisProject.Models
             return "0";
         }
 
-        // Get total number of items in memory stack
         public int GetMemoryCount()
         {
             return _memoryStack.Count;
         }
 
         #endregion
-
-        // Additional display methods for programmer mode
         public string GetBinaryRepresentation()
         {
             long value = ConvertToDecimal(CurrentInput, CurrentNumberSystem);

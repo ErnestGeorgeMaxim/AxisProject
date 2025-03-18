@@ -1,7 +1,5 @@
 ﻿using AxisProject.Commands;
 using AxisProject.Models;
-using AxisProject.Views;
-using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -14,12 +12,8 @@ namespace AxisProject.Views
     {
         private Window _sidebarWindow = null!;
         private bool _isSidebarOpen = false;
-
-        // Memory view fields
         private Window _memoryWindow = null!;
         private bool _isMemoryOpen = false;
-
-        // Change these types to the programmer versions
         private ProgrammerCalculatorModel _calculator;
         private InputHandlerProgrammer _inputHandler;
 
@@ -30,15 +24,10 @@ namespace AxisProject.Views
             this.Focusable = true;
             this.Focus();
 
-            // Create an instance of ProgrammerCalculatorModel
             _calculator = new ProgrammerCalculatorModel();
-
-            // Use InputHandlerProgrammer
             _inputHandler = new InputHandlerProgrammer(DisplayTextBox, _calculator, this);
 
             DisplayTextBox.Text = _calculator.GetDisplayText();
-
-            // Add number representation display
             InitializeNumberSystemDisplays();
 
             InitializeSidebar();
@@ -60,13 +49,14 @@ namespace AxisProject.Views
                 }
             }
 
-            // Set click handlers for the number system buttons
             SetNumberSystemButtonHandlers();
 
             AttachButtonHandlers();
-
-            // Update button states for initial number system
+            NumberSystem savedSystem = SettingsManager.Instance.NumberSystem;
+            _calculator.ChangeNumberSystem(savedSystem);
+            HighlightActiveNumberSystemButton(savedSystem);
             _inputHandler.UpdateButtonStates();
+            UpdateNumberRepresentations();
 
             this.LocationChanged += ProgrammerView_LocationChanged;
             this.KeyDown += ProgrammerView_KeyDown;
@@ -74,7 +64,6 @@ namespace AxisProject.Views
 
         private void InitializeNumberSystemDisplays()
         {
-            // Create a StackPanel for number representations
             StackPanel representationsPanel = new StackPanel
             {
                 Orientation = Orientation.Vertical,
@@ -83,10 +72,7 @@ namespace AxisProject.Views
                 HorizontalAlignment = HorizontalAlignment.Stretch
             };
 
-            // Add the StackPanel to the main grid
             ButtonGrid.Children.Add(representationsPanel);
-
-            // Initial update of displays
             UpdateNumberRepresentations();
         }
 
@@ -100,7 +86,6 @@ namespace AxisProject.Views
                 TextWrapping = TextWrapping.Wrap
             };
 
-            // Create the content with accent color for the prefix
             var prefixRun = new Run(prefix + ": ")
             {
                 Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(accentColor)
@@ -114,19 +99,15 @@ namespace AxisProject.Views
 
         private void UpdateNumberRepresentations()
         {
-            // Get the values in different number systems
             string hexValue = _calculator.GetHexRepresentation();
             string decValue = _calculator.CurrentInput;
             string octValue = _calculator.GetOctalRepresentation();
             string binValue = _calculator.GetBinaryRepresentation();
-
-            // Format the binary value for better readability
             string formattedBinValue = FormatBinaryValue(binValue);
         }
 
         private void UpdateNumberSystemInline(TextBlock textBlock, string prefix, string value)
         {
-            // Clear existing inlines and rebuild
             textBlock.Inlines.Clear();
             var prefixRun = new Run(prefix)
             {
@@ -138,7 +119,6 @@ namespace AxisProject.Views
 
         private string FormatBinaryValue(string binValue)
         {
-            // Group binary digits for better readability
             string result = "";
             for (int i = 0; i < binValue.Length; i++)
             {
@@ -178,22 +158,17 @@ namespace AxisProject.Views
         {
             _calculator.ChangeNumberSystem(system);
 
-            // Update the button states to enable/disable based on the new number system
+            SettingsManager.Instance.NumberSystem = system;
+
+            Console.WriteLine($"Saved number system: {SettingsManager.Instance.NumberSystem}");
             _inputHandler.UpdateButtonStates();
-
-            // Update display text
             DisplayTextBox.Text = _calculator.GetDisplayText();
-
-            // Update number representations
             UpdateNumberRepresentations();
-
-            // Visually indicate which number system button is active
             HighlightActiveNumberSystemButton(system);
         }
 
         private void HighlightActiveNumberSystemButton(NumberSystem system)
         {
-            // Find the number system buttons and update their appearance
             foreach (var child in ButtonGrid.Children)
             {
                 if (child is Button button)
@@ -203,17 +178,15 @@ namespace AxisProject.Views
 
                     bool isActiveSystem = false;
 
-                    // Check if this button is for the active system
                     switch (content)
                     {
                         case "HEX": isActiveSystem = system == NumberSystem.HEX; break;
                         case "DEC": isActiveSystem = system == NumberSystem.DEC; break;
                         case "OCT": isActiveSystem = system == NumberSystem.OCT; break;
                         case "BIN": isActiveSystem = system == NumberSystem.BIN; break;
-                        default: continue; // Skip other buttons
+                        default: continue;
                     }
 
-                    // Change the appearance of the button based on whether it's active
                     if (isActiveSystem)
                     {
                         button.Foreground = new SolidColorBrush(Colors.White);
@@ -244,7 +217,6 @@ namespace AxisProject.Views
 
         private void AttachButtonHandlers()
         {
-            // Define memory button content identifiers
             string[] memoryButtonContents = { "MC", "MR", "M+", "M-", "MS", "M˅" };
 
             foreach (var child in ButtonGrid.Children)
@@ -258,13 +230,12 @@ namespace AxisProject.Views
                             string? content = button.Content?.ToString();
                             if (content != null && memoryButtonContents.Contains(content))
                             {
-                                // Set specific click handler for memory buttons
                                 button.Click += MemoryButton_Click;
                             }
                             else
                             {
-                                // Regular button handler
-                                button.Click += (s, e) => {
+                                button.Click += (s, e) =>
+                                {
                                     _inputHandler.ButtonClickHandler(s, e);
                                     UpdateNumberRepresentations();
                                 };
@@ -277,13 +248,12 @@ namespace AxisProject.Views
                     string? content = button.Content?.ToString();
                     if (content != null && memoryButtonContents.Contains(content))
                     {
-                        // Set specific click handler for memory buttons
                         button.Click += MemoryButton_Click;
                     }
                     else
                     {
-                        // Regular button handler
-                        button.Click += (s, e) => {
+                        button.Click += (s, e) =>
+                        {
                             _inputHandler.ButtonClickHandler(s, e);
                             UpdateNumberRepresentations();
                         };
@@ -292,7 +262,6 @@ namespace AxisProject.Views
             }
         }
 
-        // Add this new method to handle memory button clicks
         private void MemoryButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button)
@@ -407,7 +376,6 @@ namespace AxisProject.Views
             _isSidebarOpen = !_isSidebarOpen;
         }
 
-        // Toggle the memory view
         public void ToggleMemoryView()
         {
             if (_isMemoryOpen)
@@ -418,13 +386,12 @@ namespace AxisProject.Views
             else
             {
                 PositionMemoryView();
-                UpdateMemoryViewDisplay(); // Update display when opening
+                UpdateMemoryViewDisplay();
                 _memoryWindow.Show();
                 _isMemoryOpen = true;
             }
         }
 
-        // Called by InputHandler after a memory operation to update the memory view
         public void UpdateMemoryViewDisplay()
         {
             if (_memoryWindow is MemoryView memView)
@@ -445,12 +412,54 @@ namespace AxisProject.Views
 
         public void SwitchToStandardMode()
         {
+            // Save calculator mode setting
+            SettingsManager.Instance.CalculatorMode = CalculatorMode.Standard;
+
+            Console.WriteLine($"Saved calculator mode: {SettingsManager.Instance.CalculatorMode}"); // Debug line
+
             // Create and show the standard calculator view
             MainWindowView mainView = new MainWindowView();
             mainView.Show();
 
             // Close the programmer window (and associated sidebar and memory view)
             this.Close();
+        }
+
+        private void CopyCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            _calculator.Copy();
+        }
+
+        private void CutCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            DisplayTextBox.Text = _calculator.Cut();
+        }
+
+        private void PasteCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            _calculator.Paste();
+            DisplayTextBox.Text = _calculator.GetDisplayText();
+        }
+
+        private void Copy_Click(object sender, RoutedEventArgs e)
+        {
+            _calculator.Copy();
+        }
+
+        private void Cut_Click(object sender, RoutedEventArgs e)
+        {
+            DisplayTextBox.Text = _calculator.Cut();
+        }
+
+        private void Paste_Click(object sender, RoutedEventArgs e)
+        {
+            _calculator.Paste();
+            DisplayTextBox.Text = _calculator.GetDisplayText();
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            _inputHandler.KeyPressHandler(sender, e);
         }
     }
 }
